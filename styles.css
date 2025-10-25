@@ -567,7 +567,7 @@ input::placeholder {
     margin: clamp(4px, 1vw, 8px) 0;
     font-size: clamp(13px, 2vw, 15px);
     line-height: 1.4;
-    color: #ffffff;
+    color: #3e3e3e;
     text-shadow: 2px 2px 4px rgba(255, 0, 0, 0.433);
 }
 
