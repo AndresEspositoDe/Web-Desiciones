@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desissiones</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Pagina para decidir</h1>
+        
+        <!-- Nuevo cuadro de última persona -->
+        <div id="ultimaPersona" class="ultima-persona">
+            <div class="ultima-persona-content">
+                <h3>Ultimo en decidir</h3>
+                <div class="persona-info">
+                    <div class="avatar-container">
+                        <img id="avatarImg" src="" alt="Avatar" class="avatar">
+                    </div>
+                    <div class="persona-details">
+                        <span id="ultimoNombre" class="nombre-persona">Nadie aún</span>
+                        <span id="ultimaFecha" class="fecha-persona">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <form id="dataForm" class="form">
+            <div class="form-group">
+                <label for="nombre">Nombre:</label>
+                <select id="nombre" name="nombre" required>
+                    <option value="">Selecciona un nombre</option>
+                    <option value="Rafa">Rafa</option>
+                    <option value="Tana">Tana</option>
+                    <option value="TheGoat">TheGoat</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="fecha">Fecha de Click:</label>
+                <input type="text" id="fecha" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="decision">Decisión:</label>
+                <input type="text" id="decision" name="decision" placeholder="Escribe tu decisión aquí..." required>
+            </div>
+            
+            <button type="button" id="guardarBtn" class="btn-guardar">
+                Decision
+            </button>
+        </form>
+        
+        <div id="mensaje" class="mensaje"></div>
+        
+        <div class="datos-guardados">
+            <h2>Historial de Decisiones</h2>
+            <div id="listaDatos" class="lista-datos"></div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
