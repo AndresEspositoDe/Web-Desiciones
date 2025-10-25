@@ -118,7 +118,7 @@ class GestorDatosFirebase {
 
     obtenerAvatarPorNombre(nombre) {
     const avatares = {
-        'Rafa': './images/Rafa.jpg',
+        'Rafa': './images/Rafa.jpeg',
         'Tana': './images/Tana.jpg', 
         'TheGoat': './images/Andres.jpg',
         'default': './images/Nadie.webp'
