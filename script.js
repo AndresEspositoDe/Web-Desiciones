@@ -1,12 +1,26 @@
-class GestorDatos {
+// Configuración de Firebase - REEMPLAZA CON TUS DATOS
+const firebaseConfig = {
+  apiKey: "AIzaSyA7ZLApADgaiuEb0jYq2CRjGfKsJVJs1Cg",
+  authDomain: "web-desiciones.firebaseapp.com",
+  projectId: "web-desiciones",
+  storageBucket: "web-desiciones.firebasestorage.app",
+  messagingSenderId: "850430817535",
+  appId: "1:850430817535:web:299139648cff9ce20608ca"
+};
+
+// Inicializar Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+class GestorDatosFirebase {
     constructor() {
-        this.datosGuardados = JSON.parse(localStorage.getItem('datosFormulario')) || [];
-        this.ultimaPersona = JSON.parse(localStorage.getItem('ultimaPersona')) || null;
+        this.datosGuardados = [];
+        this.ultimaPersona = null;
+        this.contadorUsuarios = 0;
+        
         this.inicializarElementos();
         this.configurarEventos();
-        this.mostrarDatosGuardados();
-        this.mostrarUltimaPersona();
-        this.configurarResponsive();
+        this.inicializarFirebase();
     }
 
     inicializarElementos() {
@@ -17,12 +31,12 @@ class GestorDatos {
         this.guardarBtn = document.getElementById('guardarBtn');
         this.mensajeDiv = document.getElementById('mensaje');
         this.listaDatos = document.getElementById('listaDatos');
-        
-        // Elementos para la última persona
         this.ultimaPersonaDiv = document.getElementById('ultimaPersona');
         this.avatarImg = document.getElementById('avatarImg');
         this.ultimoNombreSpan = document.getElementById('ultimoNombre');
         this.ultimaFechaSpan = document.getElementById('ultimaFecha');
+        this.estadoConexion = document.getElementById('estadoConexion');
+        this.contadorUsuariosSpan = document.getElementById('contadorUsuarios');
     }
 
     configurarEventos() {
@@ -39,17 +53,55 @@ class GestorDatos {
         });
     }
 
-    configurarResponsive() {
-        this.ajustarAlturaLista();
-        window.addEventListener('resize', () => this.ajustarAlturaLista());
+    inicializarFirebase() {
+        // Escuchar cambios en la colección de datos
+        db.collection('formularioDatos')
+            .orderBy('timestamp', 'desc')
+            .onSnapshot((snapshot) => {
+                this.datosGuardados = [];
+                snapshot.forEach((doc) => {
+                    this.datosGuardados.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                this.mostrarDatosGuardados();
+                this.actualizarUltimaPersona();
+            });
+
+        // Escuchar cambios en el contador de usuarios
+        db.collection('estado').doc('usuarios')
+            .onSnapshot((doc) => {
+                if (doc.exists) {
+                    this.contadorUsuarios = doc.data().contador || 0;
+                    this.actualizarContadorUsuarios();
+                }
+            });
+
+        // Registrar usuario conectado
+        this.registrarUsuario();
     }
 
-    ajustarAlturaLista() {
-        if (window.innerHeight < 600) {
-            this.listaDatos.style.maxHeight = '200px';
-        } else {
-            this.listaDatos.style.maxHeight = '50vh';
-        }
+    async registrarUsuario() {
+        const usuarioRef = db.collection('estado').doc('usuarios');
+        
+        // Incrementar contador
+        await usuarioRef.set({
+            contador: firebase.firestore.FieldValue.increment(1),
+            ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        // Manejar cuando el usuario cierra la página
+        window.addEventListener('beforeunload', async () => {
+            await usuarioRef.set({
+                contador: firebase.firestore.FieldValue.increment(-1),
+                ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+        });
+    }
+
+    actualizarContadorUsuarios() {
+        this.contadorUsuariosSpan.textContent = `${this.contadorUsuarios} usuarios conectados`;
     }
 
     obtenerFechaActual() {
@@ -67,42 +119,42 @@ class GestorDatos {
     obtenerAvatarPorNombre(nombre) {
     const avatares = {
         'Rafa': './images/rafa.jpg',
-        'Tana': './images/tana.jpg',
-        'TheGoat': './images/Andres.jpg'
+        'Tana': './images/tana.jpg', 
+        'TheGoat': './images/Andres.jpg',
+        'default': './images/Nadie.webp'
     };
-    return avatares[nombre] || './images/Nadie.webp';
+    return avatares[nombre] || avatares['default'];
 }
+
+    actualizarUltimaPersona() {
+        if (this.datosGuardados.length > 0) {
+            const ultimo = this.datosGuardados[0];
+            this.ultimaPersona = ultimo;
+            this.mostrarUltimaPersona();
+        } else {
+            this.ultimaPersona = null;
+            this.mostrarUltimaPersona();
+        }
+    }
 
     mostrarUltimaPersona() {
         if (!this.ultimaPersona) {
             this.ultimaPersonaDiv.className = 'ultima-persona vacio';
             this.ultimoNombreSpan.textContent = 'Nadie aún';
-            this.ultimaFechaSpan.textContent = 'Sé el primero en guardar datos';
+            this.ultimaFechaSpan.textContent = 'Sé el primero en decidir o jodete';
             this.avatarImg.src = this.obtenerAvatarPorNombre('default');
             return;
         }
 
-        // Actualizar la información
         this.ultimoNombreSpan.textContent = this.ultimaPersona.nombre;
         this.ultimaFechaSpan.textContent = this.ultimaPersona.fecha;
         this.avatarImg.src = this.obtenerAvatarPorNombre(this.ultimaPersona.nombre);
         
-        // Aplicar clase específica para el estilo de color y animación
         this.ultimaPersonaDiv.className = `ultima-persona nuevo-registro ${this.ultimaPersona.nombre.toLowerCase()}`;
         
-        // Remover la clase de animación después de que termine
         setTimeout(() => {
             this.ultimaPersonaDiv.classList.remove('nuevo-registro');
         }, 3000);
-    }
-
-
-    guardarUltimaPersona(nombre, fecha) {
-        this.ultimaPersona = {
-            nombre: nombre,
-            fecha: fecha
-        };
-        localStorage.setItem('ultimaPersona', JSON.stringify(this.ultimaPersona));
     }
 
     validarFormulario() {
@@ -121,7 +173,7 @@ class GestorDatos {
         return true;
     }
 
-    guardarDatos() {
+    async guardarDatos() {
         if (!this.validarFormulario()) {
             return;
         }
@@ -129,35 +181,30 @@ class GestorDatos {
         this.guardarBtn.disabled = true;
         this.guardarBtn.textContent = 'Guardando...';
 
-        setTimeout(() => {
+        try {
             const fechaClick = this.obtenerFechaActual();
             this.fechaInput.value = fechaClick;
 
             const nuevoDato = {
-                id: Date.now(),
                 nombre: this.nombreSelect.value,
                 fecha: fechaClick,
-                decision: this.decisionInput.value.trim()
+                decision: this.decisionInput.value.trim(),
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
             };
 
-            this.datosGuardados.unshift(nuevoDato);
-            this.guardarEnLocalStorage();
-            
-            // Guardar como última persona
-            this.guardarUltimaPersona(this.nombreSelect.value, fechaClick);
-            this.mostrarUltimaPersona();
+            // Guardar en Firebase
+            await db.collection('formularioDatos').add(nuevoDato);
             
             this.mostrarMensaje('Datos guardados correctamente', 'exito');
-            this.mostrarDatosGuardados();
             this.limpiarFormulario();
             
+        } catch (error) {
+            console.error('Error al guardar:', error);
+            this.mostrarMensaje('Error al guardar los datos', 'error');
+        } finally {
             this.guardarBtn.disabled = false;
             this.guardarBtn.textContent = 'Guardar Datos';
-        }, 500);
-    }
-
-    guardarEnLocalStorage() {
-        localStorage.setItem('datosFormulario', JSON.stringify(this.datosGuardados));
+        }
     }
 
     mostrarDatosGuardados() {
@@ -171,32 +218,54 @@ class GestorDatos {
                 <p><strong>Nombre:</strong> ${this.escapeHTML(dato.nombre)}</p>
                 <p><strong>Fecha:</strong> ${dato.fecha}</p>
                 <p><strong>Decisión:</strong> ${this.escapeHTML(dato.decision)}</p>
-                <button onclick="gestorDatos.eliminarDato(${dato.id})" class="btn-eliminar">
+                <button onclick="gestorDatos.eliminarDato('${dato.id}')" class="btn-eliminar">
                     Eliminar
                 </button>
             </div>
         `).join('');
     }
 
-    eliminarDato(id) {
-        if (confirm('¿Estás seguro de que quieres eliminar este dato?')) {
-            this.datosGuardados = this.datosGuardados.filter(dato => dato.id !== id);
-            this.guardarEnLocalStorage();
-            this.mostrarDatosGuardados();
-            this.mostrarMensaje('Dato eliminado correctamente', 'exito');
-            
-            // Actualizar última persona si era la que se eliminó
-            if (this.ultimaPersona && this.datosGuardados.length > 0) {
-                const ultimoDato = this.datosGuardados[0];
-                this.guardarUltimaPersona(ultimoDato.nombre, ultimoDato.fecha);
-                this.mostrarUltimaPersona();
-            } else if (this.datosGuardados.length === 0) {
-                this.ultimaPersona = null;
-                localStorage.removeItem('ultimaPersona');
-                this.mostrarUltimaPersona();
-            }
-        }
+    async eliminarDato(id) {
+    const boton = event.target;
+    const item = boton.closest('.item-dato');
+    
+    // Confirmación con estilo
+    if (!confirm('¿Estás seguro de que quieres eliminar este registro?')) {
+        return;
     }
+    
+    try {
+        // Efecto visual de eliminación
+        boton.className = 'btn-eliminar eliminando';
+        boton.innerHTML = 'Eliminando...';
+        item.classList.add('eliminando');
+        
+        // Eliminar de Firebase
+        await db.collection('formularioDatos').doc(id).delete();
+        
+        // Animación de desaparición
+        item.style.transition = 'all 0.5s ease';
+        item.style.opacity = '0';
+        item.style.transform = 'translateX(-100%)';
+        item.style.margin = '0';
+        item.style.padding = '0';
+        item.style.maxHeight = '0';
+        item.style.overflow = 'hidden';
+        
+        setTimeout(() => {
+            this.mostrarMensaje('✅ Dato eliminado correctamente', 'exito');
+        }, 500);
+        
+    } catch (error) {
+        console.error('Error al eliminar:', error);
+        this.mostrarMensaje('❌ Error al eliminar el dato', 'error');
+        
+        // Restaurar botón
+        boton.className = 'btn-eliminar';
+        boton.innerHTML = 'Eliminar';
+        item.classList.remove('eliminando');
+    }
+}
 
     mostrarMensaje(mensaje, tipo) {
         this.mensajeDiv.textContent = mensaje;
@@ -225,42 +294,7 @@ class GestorDatos {
     }
 }
 
-// Estilos adicionales responsive para el botón eliminar
-const estiloEliminar = document.createElement('style');
-estiloEliminar.textContent = `
-    .btn-eliminar {
-        background: linear-gradient(135deg, #dc3545, #c82333);
-        color: white;
-        border: none;
-        padding: clamp(6px, 2vw, 8px) clamp(10px, 2vw, 15px);
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: clamp(11px, 2vw, 13px);
-        margin-top: 8px;
-        transition: all 0.3s ease;
-        font-weight: bold;
-    }
-    
-    .btn-eliminar:hover {
-        background: linear-gradient(135deg, #c82333, #a71e2a);
-        transform: translateY(-2px);
-        box-shadow: 0 3px 8px rgba(0,0,0,0.2);
-    }
-    
-    .btn-eliminar:active {
-        transform: translateY(0);
-    }
-    
-    @media (max-width: 480px) {
-        .btn-eliminar {
-            width: 100%;
-            padding: 10px;
-        }
-    }
-`;
-document.head.appendChild(estiloEliminar);
-
-// Inicializar la aplicación cuando el DOM esté listo
+// Inicializar la aplicación
 document.addEventListener('DOMContentLoaded', () => {
-    window.gestorDatos = new GestorDatos();
+    window.gestorDatos = new GestorDatosFirebase();
 });

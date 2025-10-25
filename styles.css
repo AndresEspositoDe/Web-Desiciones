@@ -926,3 +926,197 @@ select:focus-visible {
     outline: 3px solid #4CAF50;
     outline-offset: 2px;
 }
+
+.estado-conexion {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 10px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    color: white;
+    font-weight: bold;
+}
+
+.estado-conexion.desconectado {
+    background: rgba(220,53,69,0.3);
+}
+
+.contador-usuarios {
+    background: #ff6b6b;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    margin-left: 10px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.indicador-carga {
+    text-align: center;
+    padding: 10px;
+    color: #4CAF50;
+    font-style: italic;
+}
+
+/* Estilos para el botón eliminar - AGREGAR AL FINAL DE TU CSS */
+.btn-eliminar {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 10px;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-eliminar::before {
+    content: '🗑️';
+    font-size: 16px;
+}
+
+.btn-eliminar:hover {
+    background: linear-gradient(135deg, #ff5252, #e53935);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+}
+
+.btn-eliminar:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(255, 107, 107, 0.3);
+}
+
+/* Efecto de pulso al hover */
+.btn-eliminar:hover::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 25px;
+    animation: pulseRed 1s infinite;
+}
+
+@keyframes pulseRed {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+}
+
+/* Efecto de deslizamiento */
+.btn-eliminar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: left 0.5s ease;
+}
+
+.btn-eliminar:hover::after {
+    left: 100%;
+}
+
+/* Estados de carga para el botón eliminar */
+.btn-eliminar.eliminando {
+    background: linear-gradient(135deg, #ffa726, #fb8c00);
+    cursor: not-allowed;
+}
+
+.btn-eliminar.eliminando::before {
+    content: '⏳';
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Mejorar el item-dato para que el botón se vea mejor */
+.item-dato {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    padding: clamp(12px, 3vw, 20px);
+    margin-bottom: 15px;
+    border-radius: 10px;
+    border-left: 5px solid #4CAF50;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+.item-dato:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+/* Efecto especial cuando se elimina un item */
+.item-dato.eliminando {
+    background: linear-gradient(135deg, #fff3e0, #ffecb3);
+    border-left-color: #ffa726;
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Responsive para el botón eliminar */
+@media (max-width: 480px) {
+    .btn-eliminar {
+        width: 100%;
+        justify-content: center;
+        padding: 12px;
+        font-size: 13px;
+    }
+    
+    .btn-eliminar::before {
+        font-size: 14px;
+    }
+}
+
+/* Efecto de confirmación */
+.btn-eliminar.confirmando {
+    background: linear-gradient(135deg, #ff4444, #cc0000);
+    animation: pulseDanger 0.5s infinite;
+}
+
+@keyframes pulseDanger {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(255, 68, 68, 0);
+    }
+}
