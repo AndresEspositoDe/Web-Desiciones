@@ -23,7 +23,7 @@ h1 {
     color: white;
     margin-bottom: 20px;
     font-size: clamp(1.8rem, 4vw, 2.5rem);
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    text-shadow: 2px 2px 4px rgba(255, 0, 0, 0.433);
 }
 
 h2 {
